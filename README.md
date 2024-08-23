@@ -10,10 +10,9 @@ Welcome to the FastAPI Microservice Template! This template provides a robust st
    - [Prerequisites](#prerequisites)
    - [Generating the Project Structure](#generating-the-project-structure)
    - [Setting Up the Environment](#setting-up-the-environment)
-4. [Development Guidelines](#development-guidelines)
-5. [Deployment](#deployment)
-6. [Contributing](#contributing)
-7. [License](#license)
+4. [Documentation](#documentation)
+5. [Contributing](#contributing)
+6. [License](#license)
 
 ## Features
 
@@ -86,7 +85,7 @@ my_fastapi_microservice/
 
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/fastapi-microservice-template.git
+   git clone https://github.com/onlythompson/fastapi-microservice-template.git
    cd fastapi-microservice-template
    ```
 
@@ -125,33 +124,26 @@ my_fastapi_microservice/
 
 Your FastAPI application should now be running at `http://localhost:8000`.
 
-## Development Guidelines
 
-- Follow the principles of Clean Architecture and Domain-Driven Design.
-- Write unit tests for all new features and maintain high test coverage.
-- Use type hints throughout the codebase.
-- Follow PEP 8 style guide for Python code.
-- Document all public APIs using docstrings.
-- Use feature flags for gradual rollouts and A/B testing.
-- Implement proper error handling and logging.
-- Use async/await for I/O-bound operations to improve performance.
+## Documentation
 
-## Deployment
+Comprehensive documentation for this project can be found in the `docs/` directory. Here are quick links to key documentation files:
 
-This template includes Kubernetes manifests for deployment. To deploy your microservice:
+- [API Documentation](docs/api.md): Detailed information about the API endpoints, request/response formats, and authentication.
+- [Architecture Documentation](docs/architecture.md): Overview of the system architecture, including layers, design patterns, and key concepts.
+- [Deployment Guide](docs/deployment.md): Instructions for deploying the microservice to various environments.
+- [Development Guide](docs/development.md): Best practices and guidelines for developing and extending the microservice.
+- [Testing Strategy](docs/testing.md): Overview of the testing approach, including unit, integration, and end-to-end testing.
 
-1. Build and push your Docker image:
-   ```
-   docker build -t your-registry/my-fastapi-microservice:latest .
-   docker push your-registry/my-fastapi-microservice:latest
-   ```
+### Architecture Decision Records (ADRs)
 
-2. Update the image in `k8s/deployment.yaml`.
+We use Architecture Decision Records (ADRs) to document important architectural decisions. You can find these in the `docs/adr/` directory:
 
-3. Apply the Kubernetes manifests:
-   ```
-   kubectl apply -f k8s/
-   ```
+- [ADR-0001: Use of CQRS Pattern](docs/adr/0001-use-cqrs-pattern.md)
+- [ADR-0002: Choice of Database](docs/adr/0002-choice-of-database.md)
+- [ADR-0003: API Versioning Strategy](docs/adr/0003-api-versioning-strategy.md)
+
+For more detailed information about the architecture, API documentation, and development guidelines, please refer to the respective documents in the `docs/` directory.
 
 ## Contributing
 

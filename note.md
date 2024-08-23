@@ -1,188 +1,51 @@
-# Architecture Documentation
+# FastAPI Microservice Template
 
-## Overview
+[... previous content remains the same ...]
 
-This document outlines the high-level architecture of our FastAPI Microservice. The architecture follows Clean Architecture principles and incorporates elements of Domain-Driven Design (DDD) to ensure a scalable, maintainable, and loosely coupled system.
+## Table of Contents
 
-## Architectural Principles
+1. [Features](#features)
+2. [Project Structure](#project-structure)
+3. [Getting Started](#getting-started)
+   - [Prerequisites](#prerequisites)
+   - [Generating the Project Structure](#generating-the-project-structure)
+   - [Setting Up the Environment](#setting-up-the-environment)
+4. [Development Guidelines](#development-guidelines)
+5. [Deployment](#deployment)
+6. [Documentation](#documentation)
+7. [Contributing](#contributing)
+8. [License](#license)
 
-1. **Separation of Concerns:** The application is divided into distinct layers, each with a specific responsibility.
-2. **Dependency Rule:** Dependencies point inwards. Inner layers are unaware of outer layers.
-3. **Abstraction:** Use of interfaces and abstract classes to define boundaries between layers.
-4. **Testability:** The architecture facilitates easy testing of business logic independent of external concerns.
-
-## Project Structure
-
-Our project follows this structure:
-
-```
-my_fastapi_microservice/
-├── src/
-│   ├── application/
-│   │   ├── interfaces/
-│   │   ├── services/
-│   │   └── use_cases/
-│   ├── domain/
-│   │   ├── entities/
-│   │   ├── value_objects/
-│   │   └── events/
-│   ├── infrastructure/
-│   │   ├── database/
-│   │   ├── repositories/
-│   │   ├── messaging/
-│   │   └── cache/
-│   ├── presentation/
-│   │   ├── api/
-│   │   │   ├── routes/
-│   │   │   └── schemas/
-│   │   ├── grpc/
-│   │   └── graphql/
-│   ├── core/
-│   │   ├── config.py
-│   │   ├── exceptions.py
-│   │   ├── logging.py
-│   │   ├── events.py
-│   │   ├── security.py
-│   │   ├── middlewares.py
-│   │   ├── telemetry.py
-│   │   └── health.py
-│   └── common/
-│       ├── constants.py
-│       └── utils.py
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-├── docs/
-├── scripts/
-└── k8s/
-```
-
-## Layers
-
-### 1. Domain Layer (`src/domain/`)
-
-- **Responsibility:** Contains enterprise-wide business rules and entities.
-- **Key Components:**
-  - `entities/`: Core business entities
-  - `value_objects/`: Immutable objects that are distinguishable only by their properties
-  - `events/`: Domain events for important state changes
-  - `exceptions.py`: Domain-specific exceptions
-
-### 2. Application Layer (`src/application/`)
-
-- **Responsibility:** Contains application-specific business rules and orchestrates the flow of data.
-- **Key Components:**
-  - `interfaces/`: Abstractions for repositories and services
-  - `services/`: Application services implementing business logic
-  - `use_cases/`: Use case implementations
-
-### 3. Infrastructure Layer (`src/infrastructure/`)
-
-- **Responsibility:** Contains implementations of interfaces defined in the application layer and all external concerns.
-- **Key Components:**
-  - `database/`: Database connection and configuration
-  - `repositories/`: Implementations of repository interfaces
-  - `messaging/`: Messaging implementations (e.g., Kafka)
-  - `cache/`: Caching implementations (e.g., Redis)
-
-### 4. Presentation Layer (`src/presentation/`)
-
-- **Responsibility:** Handles external requests and responses.
-- **Key Components:**
-  - `api/`: FastAPI route definitions and request/response models
-  - `grpc/`: gRPC service implementations (if applicable)
-  - `graphql/`: GraphQL schema and resolvers (if applicable)
-
-### 5. Core (`src/core/`)
-
-- **Responsibility:** Contains cross-cutting concerns and shared utilities.
-- **Key Components:**
-  - `config.py`: Configuration management
-  - `exceptions.py`: Global exception handling
-  - `logging.py`: Logging configuration
-  - `events.py`: Event handling
-  - `security.py`: Security utilities
-  - `middlewares.py`: Request/response processing middlewares
-  - `telemetry.py`: Distributed tracing and monitoring
-  - `health.py`: Health check endpoints
-
-### 6. Common (`src/common/`)
-
-- **Responsibility:** Shared utilities and constants used across the application.
-- **Key Components:**
-  - `constants.py`: Application-wide constants
-  - `utils.py`: Shared utility functions
-
-## Key Design Patterns and Concepts
-
-1. **Repository Pattern:** Used in `src/infrastructure/repositories/` to abstract data persistence operations.
-2. **CQRS (Command Query Responsibility Segregation):** Implemented in the application layer to separate read and write operations for complex domains.
-3. **Event Sourcing:** Utilized in `src/domain/events/` for domains requiring a complete history of changes.
-4. **Dependency Injection:** Used throughout the application, facilitated by FastAPI's dependency injection system.
-
-## External Dependencies
-
-1. **Database:** PostgreSQL for persistent storage, configured in `src/infrastructure/database/`.
-2. **Caching:** Redis for distributed caching and locking, implemented in `src/infrastructure/cache/`.
-3. **Messaging:** Apache Kafka for asynchronous communication, set up in `src/infrastructure/messaging/`.
-4. **API Documentation:** Swagger/OpenAPI, automatically generated by FastAPI.
-
-## Deployment Architecture
-
-The microservice is designed to be deployed in a containerized environment, preferably on a Kubernetes cluster. Key components include:
-
-1. **Dockerfile:** Located in the root directory for building the application container.
-2. **docker-compose.yml:** In the root directory for local development and testing.
-3. **Kubernetes Manifests:** Located in the `k8s/` directory, including:
-   - `deployment.yaml`: For deploying the application
-   - `service.yaml`: For internal networking
-   - `ingress.yaml`: For external access
-
-## Testing
-
-The `tests/` directory is structured to support different types of tests:
-
-- `unit/`: For testing individual components in isolation
-- `integration/`: For testing interactions between components
-- `e2e/`: For end-to-end testing of the entire system
-
-## Security Considerations
-
-Security measures are primarily implemented in `src/core/security.py` and include:
-
-1. JWT-based authentication for API endpoints
-2. Role-based access control (RBAC)
-3. Integration with external secrets management (e.g., HashiCorp Vault)
-
-## Performance Optimizations
-
-1. Caching strategy using Redis, implemented in `src/infrastructure/cache/`
-2. Database optimizations configured in `src/infrastructure/database/`
-3. Asynchronous processing using background tasks and message queues
-
-## Scalability
-
-The architecture supports horizontal scalability through:
-
-1. Stateless application design
-2. Use of distributed caching (Redis)
-3. Message-based communication (Kafka) for asynchronous processing
-4. Database read replicas for scaling read operations
+[... content for sections 1-5 remains the same ...]
 
 ## Documentation
 
-The `docs/` directory contains:
+Comprehensive documentation for this project can be found in the `docs/` directory. Here are quick links to key documentation files:
 
-1. `api.md`: Detailed API documentation
-2. `architecture.md`: This architecture overview
-3. `adr/`: Architecture Decision Records for significant design decisions
+- [API Documentation](docs/api.md): Detailed information about the API endpoints, request/response formats, and authentication.
+- [Architecture Documentation](docs/architecture.md): Overview of the system architecture, including layers, design patterns, and key concepts.
+- [Deployment Guide](docs/deployment.md): Instructions for deploying the microservice to various environments.
+- [Development Guide](docs/development.md): Best practices and guidelines for developing and extending the microservice.
+- [Testing Strategy](docs/testing.md): Overview of the testing approach, including unit, integration, and end-to-end testing.
 
-## Scripts
+### Architecture Decision Records (ADRs)
 
-The `scripts/` directory contains utility scripts for various tasks such as:
+We use Architecture Decision Records (ADRs) to document important architectural decisions. You can find these in the `docs/adr/` directory:
 
-- `secret_rotation.sh`: For rotating secrets
-- Other maintenance and deployment scripts
+- [ADR-0001: Use of CQRS Pattern](docs/adr/0001-use-cqrs-pattern.md)
+- [ADR-0002: Choice of Database](docs/adr/0002-choice-of-database.md)
+- [ADR-0003: API Versioning Strategy](docs/adr/0003-api-versioning-strategy.md)
 
-This architecture provides a solid foundation for building scalable, maintainable, and performant microservices using FastAPI. It's designed to be flexible and can evolve as the project requirements grow and change over time.
+For more detailed information about the architecture, API documentation, and development guidelines, please refer to the respective documents in the `docs/` directory.
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+For any questions or support regarding this template, please open an issue on the GitHub repository. Happy coding!

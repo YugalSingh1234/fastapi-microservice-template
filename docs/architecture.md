@@ -1,5 +1,37 @@
 # Architecture Documentation
 
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Architectural Principles](#architectural-principles)
+3. [Project Structure](#project-structure)
+4. [Layers](#layers)
+   - [Domain Layer](#1-domain-layer-srcdomain)
+   - [Application Layer](#2-application-layer-srcapplication)
+   - [Infrastructure Layer](#3-infrastructure-layer-srcinfrastructure)
+   - [Presentation Layer](#4-presentation-layer-srcpresentation)
+   - [Core](#5-core-srccore)
+   - [Common](#6-common-srccommon)
+5. [Key Design Patterns and Concepts](#key-design-patterns-and-concepts)
+6. [External Dependencies](#external-dependencies)
+7. [Deployment Architecture](#deployment-architecture)
+8. [Testing](#testing)
+9. [Security Considerations](#security-considerations)
+10. [Performance Optimizations](#performance-optimizations)
+11. [Scalability](#scalability)
+12. [Documentation](#documentation)
+13. [Scripts](#scripts)
+14. [Deadlock Management Strategy](#deadlock-management-strategy)
+    - [Database Transaction Management](#1-database-transaction-management)
+    - [Distributed Locking](#2-distributed-locking)
+    - [Resource Ordering](#3-resource-ordering)
+    - [Timeouts](#4-timeouts)
+    - [Circuit Breaker Pattern](#5-circuit-breaker-pattern)
+    - [Queue Management](#6-queue-management)
+    - [Deadlock Detection](#7-deadlock-detection)
+    - [Logging and Monitoring](#8-logging-and-monitoring)
+    - [Testing](#9-testing)
+
 ## Overview
 
 This document outlines the high-level architecture of our FastAPI Microservice. The architecture follows Clean Architecture principles and incorporates elements of Domain-Driven Design (DDD) to ensure a scalable, maintainable, and loosely coupled system.
@@ -170,6 +202,8 @@ The architecture supports horizontal scalability through:
 3. Message-based communication (Kafka) for asynchronous processing
 4. Database read replicas for scaling read operations
 
+
+
 ## Documentation
 
 The `docs/` directory contains:
@@ -184,5 +218,140 @@ The `scripts/` directory contains utility scripts for various tasks such as:
 
 - `secret_rotation.sh`: For rotating secrets
 - Other maintenance and deployment scripts
+
+
+## Deadlock Management Strategy
+
+To ensure the reliability and performance of our microservice, we've implemented a comprehensive deadlock management strategy. This strategy is crucial for preventing, detecting, and resolving potential deadlocks across various components of our system.
+
+### 1. Database Transaction Management
+
+- **Short-lived Transactions:** We use short-lived transactions to reduce the chance of conflicting locks.
+- **Transaction Isolation Levels:** Appropriate isolation levels are set based on the specific requirements of each operation.
+- **Implementation:** The strategy is implemented in `src/infrastructure/database/transaction.py`.
+
+```python
+# src/infrastructure/database/transaction.py
+from contextlib import contextmanager
+
+@contextmanager
+def transaction_context(session):
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+```
+
+### 2. Distributed Locking
+
+- We use Redis for implementing distributed locks to manage shared resources across multiple instances of our service.
+- The distributed locking mechanism is implemented in `src/infrastructure/cache/locks.py`.
+
+```python
+# src/infrastructure/cache/locks.py
+class DistributedLock:
+    def __init__(self, redis_client):
+        self.redis_client = redis_client
+
+    def acquire_lock(self, lock_name, timeout=10):
+        return self.redis_client.lock(lock_name, timeout=timeout)
+
+    def release_lock(self, lock):
+        try:
+            lock.release()
+        except LockError:
+            pass  # Lock was already released or expired
+```
+
+### 3. Resource Ordering
+
+- We enforce a consistent order for acquiring resources across the application to prevent circular wait conditions.
+- This ordering is maintained in the service layer (`src/application/services/`).
+
+### 4. Timeouts
+
+- All external calls and resource acquisitions are implemented with timeouts to prevent indefinite waiting.
+- A utility for handling timeouts is provided in `src/common/timeout.py`.
+
+```python
+# src/common/timeout.py
+import asyncio
+from functools import wraps
+
+def timeout(seconds):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            return await asyncio.wait_for(func(*args, **kwargs), timeout=seconds)
+        return wrapper
+    return decorator
+```
+
+### 5. Circuit Breaker Pattern
+
+- We use the Circuit Breaker pattern to prevent cascading failures and provide fallback mechanisms.
+- The implementation is in `src/core/circuit_breaker.py`.
+
+```python
+# src/core/circuit_breaker.py
+class CircuitBreaker:
+    def __init__(self, failure_threshold, recovery_timeout):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failures = 0
+        self.last_failure_time = None
+        self.state = "CLOSED"
+
+    def __call__(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if self.state == "OPEN":
+                if time.time() - self.last_failure_time > self.recovery_timeout:
+                    self.state = "HALF-OPEN"
+                else:
+                    raise Exception("Circuit is OPEN")
+            
+            try:
+                result = func(*args, **kwargs)
+                if self.state == "HALF-OPEN":
+                    self.state = "CLOSED"
+                    self.failures = 0
+                return result
+            except Exception as e:
+                self.failures += 1
+                if self.failures >= self.failure_threshold:
+                    self.state = "OPEN"
+                    self.last_failure_time = time.time()
+                raise e
+
+        return wrapper
+```
+
+### 6. Queue Management
+
+- Proper error handling and retries are implemented in message queue consumers to manage potential deadlocks in asynchronous processing.
+- This is primarily handled in `src/infrastructure/messaging/kafka_consumer.py`.
+
+### 7. Deadlock Detection
+
+- We implement periodic checks for long-running transactions or locked resources.
+- A background task runs at regular intervals to detect potential deadlock situations.
+
+### 8. Logging and Monitoring
+
+- Enhanced logging captures information about resource acquisition and release.
+- We've implemented alerts for potential deadlock situations.
+- These are configured in `src/core/logging.py` and `src/core/telemetry.py`.
+
+### 9. Testing
+
+- Specific tests for deadlock scenarios are included in the `tests/integration/` directory.
+- We conduct chaos testing to simulate deadlock conditions in a controlled environment.
+
+By implementing these strategies, we significantly reduce the risk of deadlocks in our system. This multi-faceted approach ensures that our microservice can handle concurrent operations efficiently and recover gracefully from potential deadlock situations.
 
 This architecture provides a solid foundation for building scalable, maintainable, and performant microservices using FastAPI. It's designed to be flexible and can evolve as the project requirements grow and change over time.
